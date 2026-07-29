@@ -1,106 +1,123 @@
-# The Butterfly — Full-Stack Fashion E-commerce
+<div align="center">
+  <img src="https://the-butterfly.vercel.app/images/butterfly-logo-transparent.png" alt="The Butterfly Logo" width="200"/>
 
-A full-stack fashion e-commerce website for **The Butterfly — Your Dream Line**, with Women, Men, and Children collections, customer authentication, cart, database-backed wishlist, order checkout, protected administration, Top Sale/New Arrival controls, image uploads, stock management, and Stripe-hosted card payment support.
+  # 🦋 The Butterfly — Your Dream Line
+  **A Premium Full-Stack Fashion E-commerce Platform**
 
-## Current verified functionality
+  [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+  [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+  [![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)](https://www.prisma.io/)
+  [![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
+  [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 
-- Customer registration, email OTP verification, login, logout, protected account dashboard
-- Admin role-based login and protected admin routes
-- Women, Men, and Children collections
-- Product variants with size, colour, and stock
-- New Arrival and Top Sale sections controlled from admin
-- Admin create/edit/publish/archive/restore products
-- Admin category and flexible item-type management
-- Search and database wishlist
-- COD, bKash/Nagad/Rocket logo selection, manual transaction verification, and optional Stripe checkout
-- Customer order confirmation email, order history, PDF invoice download, and print
-- Admin order email, full payment proof details, delivery-status update, and payment-status update
-- Stock deduction on order/payment
-- Stock restoration on cancellation/return/refund
-- PostgreSQL/Neon-compatible Prisma schema
-- Cloudinary server-side image upload
-- Vercel deployment configuration
+  ### 🌐 **[Live Demo: the-butterfly.vercel.app](https://the-butterfly.vercel.app)**
+</div>
 
-## Quick start
+---
 
+## 🚀 Overview
+
+**The Butterfly** is a modern, high-performance fashion e-commerce website designed to provide a premium shopping experience. It features fully functional **Women, Men, and Children** collections, seamless customer authentication, secure checkout, robust order tracking, and a powerful admin dashboard.
+
+### ✨ Key Features
+
+🛒 **For Customers:**
+- **Secure Authentication:** Registration with email OTP verification, login, and protected account dashboard.
+- **Smart Shopping:** Advanced product variants (Size, Color, Stock), Categories, New Arrivals, and Top Sales.
+- **Wishlist & Cart:** Database-backed wishlist and responsive cart management.
+- **Flexible Checkout:** Support for COD, bKash, Nagad, Rocket (with logo selection and manual transaction verification), and optional Stripe checkout.
+- **Order Tracking:** Automated email confirmations, PDF invoice generation, and real-time order history.
+
+⚙️ **For Administrators:**
+- **Dynamic Dashboard:** Role-based protected admin routes.
+- **Product Management:** Create, edit, publish, archive, and restore products, categories, and flexible item types.
+- **Order Fulfillment:** Comprehensive order management, payment proof verification, delivery status updates, and payment status tracking.
+- **Inventory Control:** Automatic stock deduction on orders and restoration upon cancellation/refunds.
+- **Media & Pages:** Cloudinary-backed multiple image uploads and a dedicated Page Management area to customize branding, hero images, and contact info.
+
+---
+
+## 🛠️ Technology Stack
+
+- **Framework:** Next.js (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **Database:** PostgreSQL (Neon DB)
+- **ORM:** Prisma
+- **Media Storage:** Cloudinary
+- **Emails:** Resend
+- **Payments:** Stripe (Optional)
+- **Deployment:** Vercel
+
+---
+
+## 🏃‍♂️ Quick Start
+
+Follow these steps to run the project locally on your machine.
+
+### 1️⃣ Clone the Repository
 ```bash
-npm install
-npx prisma generate
-npx prisma db push
-npm run db:seed
-npm run dev
+git clone https://github.com/ea-arnob-07/the-butterfly-fullstack-ecommerce.git
+cd the-butterfly-fullstack-ecommerce
 ```
 
-Open:
+### 2️⃣ Install Dependencies
+```bash
+npm install
+```
 
-- Store: `http://localhost:3000`
-- User registration: `http://localhost:3000/auth/register`
-- User login: `http://localhost:3000/auth/login`
-- Customer account: `http://localhost:3000/account`
-- Admin dashboard: `http://localhost:3000/admin`
-- Admin products: `http://localhost:3000/admin/products`
-- Admin orders: `http://localhost:3000/admin/orders`
-
-Admin credentials come from `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env`. Run `npm run db:seed` after setting them.
-
-For the complete Bengali walkthrough, read **SETUP-GUIDE-BN.md**.
-
-## Environment variables
-
-Copy `.env.example` to `.env` and configure:
-
+### 3️⃣ Setup Environment Variables
+Copy `.env.example` to `.env` and fill in your credentials:
 ```env
 DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/the_butterfly?sslmode=require"
 JWT_SECRET="replace-with-a-long-random-secret"
 NEXT_PUBLIC_SITE_URL="http://localhost:3000"
-NEXT_PUBLIC_ENABLE_STRIPE="false"
-NEXT_PUBLIC_ENABLE_MOBILE_BANKING="true"
-NEXT_PUBLIC_MOBILE_BANKING_NUMBER="+8801816339639"
-ADMIN_EMAIL="owner@thebutterfly.com"
-ADMIN_PASSWORD="ChangeMe123!"
-ADMIN_ORDER_EMAIL="butterflythe710@gmail.com"
-
-CLOUDINARY_CLOUD_NAME=""
-CLOUDINARY_API_KEY=""
-CLOUDINARY_API_SECRET=""
-
-STRIPE_SECRET_KEY=""
-STRIPE_WEBHOOK_SECRET=""
-
-RESEND_API_KEY="re_..."
-EMAIL_FROM="The Butterfly <verify@yourdomain.com>"
+ADMIN_EMAIL="butterflythe710@gmail.com"
+ADMIN_PASSWORD="TamannA111"
+# Add your Cloudinary, Resend, and Stripe keys as well
 ```
 
-Never commit `.env` or `.env.local`.
+### 4️⃣ Database Setup
+Push the schema to your database and seed it with starter data:
+```bash
+npx prisma generate
+npx prisma db push
+npm run db:seed
+```
 
-## Production notes
+### 5️⃣ Run the Development Server
+```bash
+npm run dev
+```
 
-- Use a managed PostgreSQL database such as Neon for deployment.
-- Run Prisma schema updates against the production database from a trusted terminal.
-- Use client-owned Cloudinary, Stripe/payment, database, domain, and Vercel accounts.
-- Add password reset, policy pages, stronger distributed rate limiting, automatic payment gateway, SMS OTP, and WhatsApp Business API before high-volume production use.
+---
 
+## 🗺️ Navigation Guide
 
-## Added checkout and notification features
+Once the server is running, you can access the following routes:
 
-- Inside Dhaka delivery: **৳60**
-- Outside Dhaka delivery: **৳120**
-- bKash, Nagad, and Rocket visual selection
-- Payment number copy button for `+8801816339639`
-- Required sender number and unique transaction ID
-- Optional Cloudinary payment screenshot
-- Customer and admin order emails through Resend
-- PDF invoice attachment, secure download, and browser print
-- Normal WhatsApp support link with a pre-filled customer message
+- 🏠 **Storefront:** `http://localhost:3000`
+- 🔐 **Login:** `http://localhost:3000/auth/login`
+- 📝 **Register:** `http://localhost:3000/auth/register`
+- 👤 **Customer Account:** `http://localhost:3000/account`
+- 🛡️ **Admin Dashboard:** `http://localhost:3000/admin`
+- 📦 **Admin Products:** `http://localhost:3000/admin/products`
+- 🛒 **Admin Orders:** `http://localhost:3000/admin/orders`
 
-## New admin capabilities in this version
+*(Run `npm run db:seed` to automatically create the admin account based on your `.env` credentials.)*
 
-- 15 Bangladesh-focused Women, Men, and Children categories with one starter product in each category.
-- Full category and item-type create, rename, soft-remove, and restore controls.
-- Multiple product images, cover-image selection, and storefront image gallery.
-- Product edit/archive/restore controls, including sizes, colours, price, stock, category, and publishing status.
-- A dedicated **Admin → Page Management** area for brand identity, logo, favicon, optimized 4K hero cover, page title, descriptions, phone, email, WhatsApp, Facebook, and Instagram.
-- Protected footer credit: **Designed & Developed by Estiuk Arafat Arnob · +8801313602221** is intentionally not exposed through Page Management.
-- Optimized 3840×2160 WebP hero image for faster loading while retaining 4K resolution.
+---
 
-See `UPDATE-INSTRUCTIONS-BN.md` for the exact database update and run commands.
+## 💡 Production Notes
+
+- **Database:** It is highly recommended to use a managed PostgreSQL provider like **Neon** or **Supabase**.
+- **Security:** Ensure you use client-owned API keys for Cloudinary, Stripe, and Resend. Never commit your `.env` file to the repository.
+- **Containerization:** A `Dockerfile` and `.dockerignore` are included if you prefer deploying via Docker to platforms like AWS, Render, or DigitalOcean.
+
+---
+
+<div align="center">
+  <p><strong>Designed & Developed by <a href="https://github.com/ea-arnob-07">Estiuk Arafat Arnob</a></strong> · +8801313602221</p>
+  <p>Made with ❤️ in Bangladesh</p>
+</div>
