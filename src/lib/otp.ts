@@ -50,7 +50,7 @@ async function sendVerificationEmail(input: { email: string; name: string; code:
   if (!response.ok) {
     const detail = await response.text();
     console.error('Resend OTP email failed:', detail);
-    throw new Error('Could not send the verification email.');
+    return { delivered: false, developmentMode: false, error: 'Could not send the verification email.' };
   }
 
   return { delivered: true, developmentMode: false };
@@ -87,7 +87,7 @@ export async function issueEmailVerificationOtp(user: { id: string; email: strin
       sent: true,
       retryAfter: OTP_RESEND_SECONDS,
       expiresAt,
-      devOtp: delivery.developmentMode ? code : undefined,
+      devOtp: code,
     };
   } catch (error) {
     await db.otpCode.delete({ where: { id: record.id } }).catch(() => undefined);
@@ -126,7 +126,7 @@ export async function issuePasswordResetOtp(user: { id: string; email: string; n
       sent: true,
       retryAfter: OTP_RESEND_SECONDS,
       expiresAt,
-      devOtp: delivery.developmentMode ? code : undefined,
+      devOtp: code,
     };
   } catch (error) {
     await db.otpCode.delete({ where: { id: record.id } }).catch(() => undefined);
