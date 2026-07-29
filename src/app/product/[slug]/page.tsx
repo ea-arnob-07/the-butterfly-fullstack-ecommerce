@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ChevronRight, Package, Shield, Truck } from 'lucide-react';
-import { ProductSelector } from '@/components/product-selector';
+import { ChevronRight, Package, Shield, Star, Truck } from 'lucide-react';
+import { AddToCartButton } from '@/components/add-to-cart-button';
 import { WishlistButton } from '@/components/wishlist-button';
 import { getProductBySlug } from '@/lib/products';
 import { formatBDT } from '@/lib/money';
@@ -39,11 +39,28 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       </div>
 
       <div className="container-shell">
-        <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+        <div className="grid gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
 
           {/* ── Image gallery ─────────────────────── */}
-          <div>
+          <div className="relative pb-8">
             <ProductGallery images={product.images} name={product.name} />
+
+            <div className="absolute bottom-0 left-6 right-6 rounded-2xl p-4 shadow-[0_12px_40px_rgba(0,0,0,0.14)]" style={{ background: 'rgba(15,11,13,0.90)', backdropFilter: 'blur(16px)' }}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[11px] font-extrabold uppercase tracking-widest text-white/40">Stock remaining</p>
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className={`h-2 w-2 rounded-full ${product.stock > 10 ? 'bg-emerald-400' : product.stock > 0 ? 'bg-amber-400' : 'bg-red-400'} animate-pulse`} />
+                    <span className={`text-sm font-bold ${product.stock > 10 ? 'text-emerald-400' : product.stock > 0 ? 'text-amber-400' : 'text-red-400'}`}>
+                      {product.stock > 0 ? `${product.stock} items available` : 'Out of stock'}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex gap-0.5">
+                  {[...Array(5)].map((_, i) => <Star key={i} size={13} className="fill-amber-400 text-amber-400" />)}
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* ── Info panel ────────────────────────── */}
@@ -90,8 +107,52 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             {/* Description */}
             <p className="text-base leading-[1.9] text-stone-600">{product.description}</p>
 
-            {/* Selector & CTA — includes stock indicator */}
-            <ProductSelector product={product} />
+            {/* Sizes */}
+            {product.sizes.length > 0 && (
+              <div className="mt-7">
+                <p className="mb-3 text-sm font-extrabold uppercase tracking-[0.18em] text-stone-500">
+                  Available Sizes
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {product.sizes.map((size) => (
+                    <span
+                      key={size}
+                      className="rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-bold text-stone-700 shadow-sm transition hover:border-rose-500 hover:text-rose-700 cursor-pointer"
+                    >
+                      {size}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Colors */}
+            {product.colors.length > 0 && (
+              <div className="mt-6">
+                <p className="mb-3 text-sm font-extrabold uppercase tracking-[0.18em] text-stone-500">
+                  Available Colours
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {product.colors.map((color) => (
+                    <span
+                      key={color}
+                      className="rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-bold text-stone-700 shadow-sm transition hover:border-rose-500 hover:text-rose-700 cursor-pointer"
+                    >
+                      {color}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Divider */}
+            <div className="divider-rose my-7" />
+
+            {/* CTA */}
+            <div className="flex flex-wrap items-center gap-3">
+              <AddToCartButton product={product} />
+              <WishlistButton productId={product.id} />
+            </div>
 
             {/* Promises */}
             <div className="mt-8 grid gap-3 sm:grid-cols-3">

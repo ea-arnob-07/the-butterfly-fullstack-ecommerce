@@ -1,94 +1,106 @@
-# The Butterfly — Fullstack E-Commerce
+# The Butterfly — Full-Stack Fashion E-commerce
 
-![The Butterfly](public/images/butterfly-hero-4k.webp)
+A full-stack fashion e-commerce website for **The Butterfly — Your Dream Line**, with Women, Men, and Children collections, customer authentication, cart, database-backed wishlist, order checkout, protected administration, Top Sale/New Arrival controls, image uploads, stock management, and Stripe-hosted card payment support.
 
-**The Butterfly** is a premium, full-stack e-commerce web application tailored for modern fashion retail. Built with Next.js 15, React 19, and Prisma, it offers a seamless, high-performance shopping experience with a fully integrated Admin dashboard, secure authentication, and robust order management.
+## Current verified functionality
 
----
+- Customer registration, email OTP verification, login, logout, protected account dashboard
+- Admin role-based login and protected admin routes
+- Women, Men, and Children collections
+- Product variants with size, colour, and stock
+- New Arrival and Top Sale sections controlled from admin
+- Admin create/edit/publish/archive/restore products
+- Admin category and flexible item-type management
+- Search and database wishlist
+- COD, bKash/Nagad/Rocket logo selection, manual transaction verification, and optional Stripe checkout
+- Customer order confirmation email, order history, PDF invoice download, and print
+- Admin order email, full payment proof details, delivery-status update, and payment-status update
+- Stock deduction on order/payment
+- Stock restoration on cancellation/return/refund
+- PostgreSQL/Neon-compatible Prisma schema
+- Cloudinary server-side image upload
+- Vercel deployment configuration
 
-## 🚀 Features
+## Quick start
 
-### For Customers:
-- **Premium UI/UX:** A stunning, responsive design with elegant CSS gradients and smooth micro-animations.
-- **Product Catalog:** Browse Men's, Women's, and Children's collections with category and item-type filtering.
-- **Secure Authentication:** Email OTP verification for Registration and Login via Resend (with a local dev fallback).
-- **Cart & Checkout:** Integrated checkout flow with Stripe session tracking and dynamic delivery zones (Inside/Outside Dhaka).
-- **User Dashboard:** Customers can view order history, manage saved addresses, and update profiles.
-- **Wishlist:** Save favorite products for later.
-
-### For Administrators:
-- **Centralized Dashboard:** A complete Admin panel for managing Categories, Item Types, and Products.
-- **Order Management:** View, confirm, and update order statuses with full payment tracking (COD, Mobile Banking, Card).
-- **Inventory Control:** Automatic stock deduction on purchase, and soft/hard delete options for products.
-- **Sales Analytics:** Real-time revenue statistics, top-selling items, and recent order tracking.
-
----
-
-## 🛠️ Tech Stack
-
-- **Framework:** [Next.js 15](https://nextjs.org/) (App Router)
-- **Frontend:** [React 19](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/), [Lucide Icons](https://lucide.dev/)
-- **Backend/Database:** [Prisma ORM](https://www.prisma.io/), PostgreSQL (Neon Serverless)
-- **Authentication:** Custom session-based auth with bcrypt and HTTP-only cookies
-- **Email Delivery:** [Resend](https://resend.com/) (OTP verification and password resets)
-- **Payments:** Stripe integration readiness
-- **Language:** TypeScript
-
----
-
-## 💻 Running Locally
-
-### 1. Clone the repository
-```bash
-git clone https://github.com/ea-arnob-07/the-butterfly-fullstack-ecommerce.git
-cd the-butterfly-fullstack-ecommerce
-```
-
-### 2. Install dependencies
 ```bash
 npm install
-```
-
-### 3. Setup Environment Variables
-Create a `.env` file in the root directory and add the following keys:
-```env
-# Database
-DATABASE_URL="postgresql://user:password@host:port/database"
-
-# Authentication & Security
-JWT_SECRET="your-super-secret-jwt-key"
-
-# Resend API (For OTP Emails)
-RESEND_API_KEY="re_your_api_key_here"
-EMAIL_FROM="The Butterfly <orders@yourdomain.com>"
-```
-
-### 4. Initialize Database
-Push the Prisma schema to your database and generate the Prisma Client.
-```bash
-npx prisma db push
 npx prisma generate
-```
-
-### 5. Start the Development Server
-```bash
+npx prisma db push
+npm run db:seed
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-> **Note on Local Auth Testing:** In development mode (`NODE_ENV !== 'production'`), if Resend is not configured or fails, the application will gracefully fallback to "Development OTP Mode", printing the OTP code directly in your server console and UI for easy local testing.
+Open:
 
----
+- Store: `http://localhost:3000`
+- User registration: `http://localhost:3000/auth/register`
+- User login: `http://localhost:3000/auth/login`
+- Customer account: `http://localhost:3000/account`
+- Admin dashboard: `http://localhost:3000/admin`
+- Admin products: `http://localhost:3000/admin/products`
+- Admin orders: `http://localhost:3000/admin/orders`
 
-## 📁 Project Structure
+Admin credentials come from `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env`. Run `npm run db:seed` after setting them.
 
-- `/src/app`: Next.js App Router pages and API routes (`/api`).
-- `/src/components`: Reusable React components (UI, product cards, admin forms).
-- `/src/lib`: Core utility functions, auth logic, and Prisma singletons.
-- `/prisma`: Database schema definitions.
+For the complete Bengali walkthrough, read **SETUP-GUIDE-BN.md**.
 
----
+## Environment variables
 
-## 🛡️ License
+Copy `.env.example` to `.env` and configure:
 
-This project is licensed under the MIT License.
+```env
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/the_butterfly?sslmode=require"
+JWT_SECRET="replace-with-a-long-random-secret"
+NEXT_PUBLIC_SITE_URL="http://localhost:3000"
+NEXT_PUBLIC_ENABLE_STRIPE="false"
+NEXT_PUBLIC_ENABLE_MOBILE_BANKING="true"
+NEXT_PUBLIC_MOBILE_BANKING_NUMBER="+8801816339639"
+ADMIN_EMAIL="owner@thebutterfly.com"
+ADMIN_PASSWORD="ChangeMe123!"
+ADMIN_ORDER_EMAIL="butterflythe710@gmail.com"
+
+CLOUDINARY_CLOUD_NAME=""
+CLOUDINARY_API_KEY=""
+CLOUDINARY_API_SECRET=""
+
+STRIPE_SECRET_KEY=""
+STRIPE_WEBHOOK_SECRET=""
+
+RESEND_API_KEY="re_..."
+EMAIL_FROM="The Butterfly <verify@yourdomain.com>"
+```
+
+Never commit `.env` or `.env.local`.
+
+## Production notes
+
+- Use a managed PostgreSQL database such as Neon for deployment.
+- Run Prisma schema updates against the production database from a trusted terminal.
+- Use client-owned Cloudinary, Stripe/payment, database, domain, and Vercel accounts.
+- Add password reset, policy pages, stronger distributed rate limiting, automatic payment gateway, SMS OTP, and WhatsApp Business API before high-volume production use.
+
+
+## Added checkout and notification features
+
+- Inside Dhaka delivery: **৳60**
+- Outside Dhaka delivery: **৳120**
+- bKash, Nagad, and Rocket visual selection
+- Payment number copy button for `+8801816339639`
+- Required sender number and unique transaction ID
+- Optional Cloudinary payment screenshot
+- Customer and admin order emails through Resend
+- PDF invoice attachment, secure download, and browser print
+- Normal WhatsApp support link with a pre-filled customer message
+
+## New admin capabilities in this version
+
+- 15 Bangladesh-focused Women, Men, and Children categories with one starter product in each category.
+- Full category and item-type create, rename, soft-remove, and restore controls.
+- Multiple product images, cover-image selection, and storefront image gallery.
+- Product edit/archive/restore controls, including sizes, colours, price, stock, category, and publishing status.
+- A dedicated **Admin → Page Management** area for brand identity, logo, favicon, optimized 4K hero cover, page title, descriptions, phone, email, WhatsApp, Facebook, and Instagram.
+- Protected footer credit: **Designed & Developed by Estiuk Arafat Arnob · +8801313602221** is intentionally not exposed through Page Management.
+- Optimized 3840×2160 WebP hero image for faster loading while retaining 4K resolution.
+
+See `UPDATE-INSTRUCTIONS-BN.md` for the exact database update and run commands.

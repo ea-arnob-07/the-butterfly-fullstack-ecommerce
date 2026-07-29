@@ -146,7 +146,7 @@ export default function CheckoutPage() {
                         <p className="text-xl font-black tracking-wide text-stone-950">{MOBILE_BANKING_NUMBER}</p>
                         <button type="button" onClick={copyNumber} className="inline-flex items-center justify-center gap-2 rounded-full bg-stone-950 px-4 py-2.5 text-xs font-bold text-white"><Clipboard size={15} />{copied ? 'Copied!' : 'Copy Number'}</button>
                       </div>
-                      <p className="mt-3 text-sm font-semibold text-amber-900">SEND MONEY exactly {formatBDT(subtotal + deliveryFee)} using the selected service. Then enter the sender number and transaction ID below.</p>
+                      <p className="mt-3 text-sm font-semibold text-amber-900">Send exactly {formatBDT(subtotal + deliveryFee)} using the selected service. Then enter the sender number and transaction ID below.</p>
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <input className={inputClass} name="paymentSenderNumber" placeholder="Sender mobile number" required />

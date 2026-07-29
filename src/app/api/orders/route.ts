@@ -32,16 +32,15 @@ const orderSchema = z.object({
 
 type PreparedItem = { product: any; variant: any; quantity: number; unitPrice: number };
 
-// ── Runs OUTSIDE the transaction to avoid timeout on serverless DB connections ──
-async function prepareItems(items: z.infer<typeof itemSchema>[]): Promise<PreparedItem[]> {
+async function prepareItems(items: z.infer<typeof itemSchema>[], tx: any): Promise<PreparedItem[]> {
   const prepared: PreparedItem[] = [];
   for (const item of items) {
-    const product = await (prisma as any).product.findFirst({
+    const product = await tx.product.findFirst({
       where: { OR: [{ id: item.productId }, { slug: item.slug }], isPublished: true, deletedAt: null },
       include: { images: { orderBy: { position: 'asc' } }, variants: true },
     });
     if (!product) throw new Error(`Product not found: ${item.slug}`);
-    const variant = product.variants.find((v: any) => v.size === item.size && v.color === item.color) || product.variants[0];
+    const variant = product.variants.find((value: any) => value.size === item.size && value.color === item.color) || product.variants[0];
     if (!variant || variant.stock < item.quantity) throw new Error(`${product.name} does not have enough stock.`);
     const unitPrice = Number(variant.price || product.salePrice || product.basePrice);
     prepared.push({ product, variant, quantity: item.quantity, unitPrice });
@@ -66,120 +65,111 @@ export async function POST(request: Request) {
     const origin = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
     const transactionId = input.paymentMethod === 'MOBILE_BANKING' ? input.paymentTransactionId!.trim().toUpperCase() : null;
 
-    // ── Step 1: Validate duplicate transaction ID (fast, single query) ──────────
-    if (transactionId) {
-      const existing = await (prisma as any).order.findFirst({
-        where: { paymentTransactionId: { equals: transactionId, mode: 'insensitive' } },
-        select: { id: true },
-      });
-      if (existing) {
-        return NextResponse.json({ error: 'This transaction ID has already been used. Check the ID or contact support.' }, { status: 409 });
+    const result = await prisma.$transaction(async (tx) => {
+      if (transactionId) {
+        const existingTransaction = await (tx as any).order.findFirst({
+          where: { paymentTransactionId: { equals: transactionId, mode: 'insensitive' } },
+          select: { id: true },
+        });
+        if (existingTransaction) throw new Error('This transaction ID has already been used. Check the ID or contact support.');
       }
-    }
 
-    // ── Step 2: Prepare items OUTSIDE transaction (avoids 5s timeout on serverless) ──
-    const prepared = await prepareItems(input.items);
-    const subtotal = prepared.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-    const deliveryFee = deliveryFeeForZone(input.deliveryZone);
-    const orderNumber = `TB-${Date.now().toString().slice(-8)}-${Math.floor(Math.random() * 90 + 10)}`;
-    const isCard = input.paymentMethod === 'CARD';
-    const isMobileBanking = input.paymentMethod === 'MOBILE_BANKING';
+      const prepared = await prepareItems(input.items, tx);
+      const subtotal = prepared.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+      const deliveryFee = deliveryFeeForZone(input.deliveryZone);
+      const orderNumber = `TB-${Date.now().toString().slice(-8)}-${Math.floor(Math.random() * 90 + 10)}`;
+      const isCard = input.paymentMethod === 'CARD';
+      const isMobileBanking = input.paymentMethod === 'MOBILE_BANKING';
 
-    // ── Step 3: Create order in a MINIMAL transaction (just 1 create query) ────
-    const order = await (prisma as any).order.create({
-      data: {
-        orderNumber,
-        userId: session?.userId || null,
-        customerName: input.customerName.trim(),
-        customerEmail: input.customerEmail.toLowerCase().trim(),
-        customerPhone: input.customerPhone.trim(),
-        division: input.division.trim(),
-        district: input.district.trim(),
-        area: input.area.trim(),
-        postalCode: input.postalCode?.trim() || null,
-        deliveryAddress: input.deliveryAddress.trim(),
-        notes: input.notes?.trim() || null,
-        subtotal,
-        deliveryFee,
-        total: subtotal + deliveryFee,
-        paymentMethod: input.paymentMethod,
-        paymentStatus: isCard || isMobileBanking ? 'PENDING' : 'UNPAID',
-        paymentReference: transactionId,
-        deliveryZone: input.deliveryZone,
-        mobileBankingProvider: isMobileBanking ? input.mobileBankingProvider : null,
-        paymentSenderNumber: isMobileBanking ? input.paymentSenderNumber?.trim() : null,
-        paymentTransactionId: transactionId,
-        paymentScreenshotUrl: isMobileBanking ? input.paymentScreenshotUrl || null : null,
-        stockDeducted: !isCard,
-        items: {
-          create: prepared.map(({ product, variant, quantity, unitPrice }) => ({
-            productId: product.id,
-            name: product.name,
-            imageUrl: product.images.find((img: any) => img.isCover)?.url || product.images[0]?.url || null,
-            size: variant.size,
-            color: variant.color,
-            quantity,
-            unitPrice,
-            total: unitPrice * quantity,
-          })),
+      const order = await (tx as any).order.create({
+        data: {
+          orderNumber,
+          userId: session?.userId || null,
+          customerName: input.customerName.trim(),
+          customerEmail: input.customerEmail.toLowerCase().trim(),
+          customerPhone: input.customerPhone.trim(),
+          division: input.division.trim(),
+          district: input.district.trim(),
+          area: input.area.trim(),
+          postalCode: input.postalCode?.trim() || null,
+          deliveryAddress: input.deliveryAddress.trim(),
+          notes: input.notes?.trim() || null,
+          subtotal,
+          deliveryFee,
+          total: subtotal + deliveryFee,
+          paymentMethod: input.paymentMethod,
+          paymentStatus: isCard || isMobileBanking ? 'PENDING' : 'UNPAID',
+          paymentReference: transactionId,
+          deliveryZone: input.deliveryZone,
+          mobileBankingProvider: isMobileBanking ? input.mobileBankingProvider : null,
+          paymentSenderNumber: isMobileBanking ? input.paymentSenderNumber?.trim() : null,
+          paymentTransactionId: transactionId,
+          paymentScreenshotUrl: isMobileBanking ? input.paymentScreenshotUrl || null : null,
+          stockDeducted: !isCard,
+          items: {
+            create: prepared.map(({ product, variant, quantity, unitPrice }) => ({
+              productId: product.id,
+              name: product.name,
+              imageUrl: product.images.find((image: any) => image.isCover)?.url || product.images[0]?.url || null,
+              size: variant.size,
+              color: variant.color,
+              quantity,
+              unitPrice,
+              total: unitPrice * quantity,
+            })),
+          },
         },
-      },
-      include: { items: true },
+        include: { items: true },
+      });
+
+      if (!isCard) {
+        for (const item of prepared) {
+          await tx.productVariant.update({ where: { id: item.variant.id }, data: { stock: { decrement: item.quantity } } });
+        }
+      }
+
+      return { order, prepared, subtotal, deliveryFee };
     });
 
-    // ── Step 4: Deduct stock OUTSIDE transaction (parallel updates, no timeout) ──
-    if (!isCard) {
-      await Promise.all(
-        prepared.map((item) =>
-          prisma.productVariant.update({
-            where: { id: item.variant.id },
-            data: { stock: { decrement: item.quantity } },
-          })
-        )
-      );
-    }
+    const invoiceToken = createOrderAccessToken(result.order);
 
-    const invoiceToken = createOrderAccessToken(order);
-
-    // ── Step 5: Handle Stripe card payment ─────────────────────────────────────
-    if (isCard) {
+    if (input.paymentMethod === 'CARD') {
       try {
         const stripe = getStripe();
-        const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = prepared.map(({ product, quantity, unitPrice }) => ({
+        const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = result.prepared.map(({ product, quantity, unitPrice }) => ({
           quantity,
           price_data: { currency: 'bdt', unit_amount: Math.round(unitPrice * 100), product_data: { name: product.name } },
         }));
         lineItems.push({
           quantity: 1,
-          price_data: { currency: 'bdt', unit_amount: Math.round(deliveryFee * 100), product_data: { name: 'Delivery Fee' } },
+          price_data: { currency: 'bdt', unit_amount: Math.round(result.deliveryFee * 100), product_data: { name: 'Delivery Fee' } },
         });
 
         const checkoutSession = await stripe.checkout.sessions.create({
           mode: 'payment',
           customer_email: input.customerEmail.toLowerCase(),
-          client_reference_id: order.id,
-          metadata: { orderId: order.id, orderNumber: order.orderNumber },
+          client_reference_id: result.order.id,
+          metadata: { orderId: result.order.id, orderNumber: result.order.orderNumber },
           line_items: lineItems,
           success_url: `${origin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${origin}/payment/cancel?order=${encodeURIComponent(order.orderNumber)}`,
+          cancel_url: `${origin}/payment/cancel?order=${encodeURIComponent(result.order.orderNumber)}`,
         });
 
-        await prisma.order.update({ where: { id: order.id }, data: { stripeSessionId: checkoutSession.id } });
-        return NextResponse.json({ orderNumber: order.orderNumber, orderId: order.id, invoiceToken, checkoutUrl: checkoutSession.url }, { status: 201 });
+        await prisma.order.update({ where: { id: result.order.id }, data: { stripeSessionId: checkoutSession.id } });
+        return NextResponse.json({ orderNumber: result.order.orderNumber, orderId: result.order.id, invoiceToken, checkoutUrl: checkoutSession.url }, { status: 201 });
       } catch (stripeError) {
-        await prisma.order.delete({ where: { id: order.id } }).catch(() => undefined);
+        await prisma.order.delete({ where: { id: result.order.id } }).catch(() => undefined);
         throw stripeError;
       }
     }
 
-    // ── Step 6: Send order confirmation emails ─────────────────────────────────
     const settings = await getSiteSettings();
-    const invoiceUrl = `${origin}/order-confirmation?order=${encodeURIComponent(order.orderNumber)}&token=${encodeURIComponent(invoiceToken)}`;
-    await sendOrderEmails({ order, invoiceUrl, settings }).catch((emailError) => {
+    const invoiceUrl = `${origin}/order-confirmation?order=${encodeURIComponent(result.order.orderNumber)}&token=${encodeURIComponent(invoiceToken)}`;
+    await sendOrderEmails({ order: result.order, invoiceUrl, settings }).catch((emailError) => {
       console.error('Order was created, but notification email failed:', emailError);
     });
 
-    return NextResponse.json({ orderNumber: order.orderNumber, orderId: order.id, invoiceToken }, { status: 201 });
+    return NextResponse.json({ orderNumber: result.order.orderNumber, orderId: result.order.id, invoiceToken }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) return NextResponse.json({ error: error.issues[0]?.message || 'Invalid order information.' }, { status: 400 });
     if ((error as { code?: string })?.code === 'P2002') {

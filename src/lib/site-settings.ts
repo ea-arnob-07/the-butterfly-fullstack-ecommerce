@@ -1,5 +1,4 @@
 import { cache } from 'react';
-import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 
 export type SiteSettingsData = {
@@ -39,7 +38,7 @@ export const defaultSiteSettings: SiteSettingsData = {
   heroEyebrow: 'Luxury Fashion Destination',
   heroTitle: 'Style curated',
   heroHighlight: 'for every generation.',
-  heroTagline: 'The Butterfly — Your Dream Line',
+  heroTagline: 'The Butterfly – Your Dream Line',
   heroDescription: 'Discover a refined online shopping experience where modern design, premium presentation, and confident style come together for every generation.',
   aboutDescription: 'Premium fashion and accessories for women, men, and children with a polished shopping experience that feels modern, elegant, and trustworthy.',
   contactTitle: 'We are here to help you shop with confidence.',
@@ -49,31 +48,20 @@ export const defaultSiteSettings: SiteSettingsData = {
   whatsappNumber: '8801707845422',
   facebookUrl: 'https://www.facebook.com/profile.php?id=61581187327217&mibextid=wwXIfr&rdid=Cz2X2rMU9AlEPwy6&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1BcduGXoHy%2F#',
   instagramUrl: null,
-  deliveryText: 'Inside Dhaka delivery ৳60 · Outside Dhaka ৳120',
+  deliveryText: '', // Cleared as requested
 };
 
-// ── Cross-request cache (persists between page renders, revalidates every 5 min) ──
-const getCachedSettings = unstable_cache(
-  async (): Promise<SiteSettingsData> => {
-    try {
-      // Use findUnique (pure READ — no write on every page load)
-      const settings = await (prisma as any).siteSettings.findUnique({ where: { id: 'main' } });
-      if (!settings) {
-        // First time: create with defaults
-        return await (prisma as any).siteSettings.create({ data: defaultSiteSettings });
-      }
-      return settings;
-    } catch {
-      return defaultSiteSettings;
-    }
-  },
-  ['site-settings'],
-  { revalidate: 300 } // cache for 5 minutes across all requests
-);
-
-// ── Per-request deduplication (React cache — within same render tree) ──────────
 export const getSiteSettings = cache(async (): Promise<SiteSettingsData> => {
-  return getCachedSettings();
+  try {
+    const settings = await (prisma as any).siteSettings.upsert({
+      where: { id: 'main' },
+      update: {},
+      create: defaultSiteSettings,
+    });
+    return settings;
+  } catch {
+    return defaultSiteSettings;
+  }
 });
 
 export function normalizePhoneForLink(value: string) {

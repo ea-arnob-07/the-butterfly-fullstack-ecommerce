@@ -6,7 +6,9 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { KeyRound, MailCheck, RefreshCcw, ShieldCheck } from 'lucide-react';
 
-export default function VerifyEmailPage() {
+import { Suspense } from 'react';
+
+function VerifyContent() {
   const router = useRouter();
   const params = useSearchParams();
   const email = params.get('email') || '';
@@ -120,5 +122,13 @@ export default function VerifyEmailPage() {
         <p className="mt-6 text-center text-xs leading-6 text-stone-400">The code expires after 10 minutes and is limited to five attempts.</p>
       </div>
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <VerifyContent />
+    </Suspense>
   );
 }

@@ -6,7 +6,9 @@ import { FormEvent, useState, type ReactNode } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, Lock, Mail, LogIn } from 'lucide-react';
 
-export default function LoginPage() {
+import { Suspense } from 'react';
+
+function LoginContent() {
   const router = useRouter();
   const params = useSearchParams();
   const [error, setError] = useState('');
@@ -59,15 +61,8 @@ export default function LoginPage() {
         </div>
 
         {/* Password */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between px-1">
-            <span className="text-[13px] font-medium text-stone-700">Password</span>
-            <Link href="/auth/forgot-password" className="text-[12.5px] font-medium text-rose-600 transition hover:text-rose-700 hover:underline">
-              Forgot password?
-            </Link>
-          </div>
-          <div className="relative">
-            <span className="pointer-events-none absolute left-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-rose-50 text-rose-500"><Lock size={15} /></span>
+        <div className="relative">
+          <span className="pointer-events-none absolute left-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-rose-50 text-rose-500"><Lock size={15} /></span>
           <input
             name="password"
             type={showPass ? 'text' : 'password'}
@@ -82,7 +77,10 @@ export default function LoginPage() {
           >
             {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
-          </div>
+        </div>
+        
+        <div className="flex justify-end">
+          <button type="button" onClick={() => alert('Please contact customer support at butterflythe710@gmail.com to reset your password.')} className="text-[13px] font-semibold text-rose-600 hover:text-rose-700 hover:underline">Forgot password?</button>
         </div>
 
         {/* Error */}
@@ -111,6 +109,14 @@ export default function LoginPage() {
         </button>
       </form>
     </AuthLayout>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }
 

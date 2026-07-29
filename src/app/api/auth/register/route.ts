@@ -17,28 +17,7 @@ export async function POST(request: Request) {
     const email = input.email.toLowerCase().trim();
     const db = prisma as any;
     const exists = await db.user.findUnique({ where: { email } });
-    if (exists) {
-      if (exists.emailVerifiedAt) {
-        return NextResponse.json({ error: 'An account with this email already exists. Sign in to continue.' }, { status: 409 });
-      }
-      
-      // User exists but unverified. Update credentials and resend OTP.
-      await db.user.update({
-        where: { id: exists.id },
-        data: {
-          name: input.name.trim(),
-          phone: input.phone?.trim() || null,
-          passwordHash: await bcrypt.hash(input.password, 12),
-        }
-      });
-      const otp = await issueEmailVerificationOtp(exists, { ignoreRateLimit: true });
-      return NextResponse.json({
-        requiresVerification: true,
-        email: exists.email,
-        message: 'Account updated. Enter the verification code sent to your email.',
-        devOtp: otp.devOtp,
-      }, { status: 201 });
-    }
+    if (exists) return NextResponse.json({ error: 'An account with this email already exists. Sign in to continue.' }, { status: 409 });
 
     const user = await db.user.create({
       data: {
@@ -50,18 +29,13 @@ export async function POST(request: Request) {
       },
     });
 
-    try {
-      const otp = await issueEmailVerificationOtp(user, { ignoreRateLimit: true });
-      return NextResponse.json({
-        requiresVerification: true,
-        email: user.email,
-        message: 'Account created. Enter the verification code sent to your email.',
-        devOtp: otp.devOtp,
-      }, { status: 201 });
-    } catch (otpError) {
-      await db.user.delete({ where: { id: user.id } }).catch(() => {});
-      throw otpError;
-    }
+    const otp = await issueEmailVerificationOtp(user, { ignoreRateLimit: true });
+    return NextResponse.json({
+      requiresVerification: true,
+      email: user.email,
+      message: 'Account created. Enter the verification code sent to your email.',
+      devOtp: otp.devOtp,
+    }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) return NextResponse.json({ error: error.issues[0]?.message || 'Invalid information.' }, { status: 400 });
     console.error(error);

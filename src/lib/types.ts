@@ -4,13 +4,6 @@ export type StoreProductImage = {
   isCover?: boolean;
 };
 
-export type ProductVariantDetail = {
-  size: string;
-  color: string;
-  stock: number;
-  price?: number | null;
-};
-
 export type StoreProduct = {
   id: string;
   name: string;
@@ -28,7 +21,6 @@ export type StoreProduct = {
   sizes: string[];
   colors: string[];
   stock: number;
-  variantDetails?: ProductVariantDetail[];
   isFeatured?: boolean;
   isNewArrival?: boolean;
   isBestSeller?: boolean;

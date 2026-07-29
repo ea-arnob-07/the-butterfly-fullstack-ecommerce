@@ -49,22 +49,7 @@ export function Header({ settings }: { settings: SiteSettingsData }) {
             <a href={`tel:${tel}`} className="inline-flex items-center gap-2 text-[12.5px] text-white/70 transition hover:text-pink-300"><Phone size={13} className="text-pink-400" />{settings.phone}</a>
             <a href={`mailto:${settings.email}`} className="inline-flex items-center gap-2 text-[12.5px] text-white/70 transition hover:text-pink-300"><Mail size={13} className="text-pink-400" />{settings.email}</a>
           </div>
-          {/* Premium trust badges */}
-          <div className="flex items-center gap-5">
-            <span className="flex items-center gap-1.5 text-[11.5px] font-semibold text-white/55">
-              <span className="text-emerald-400">✦</span> 100% Authentic
-            </span>
-            <span className="h-3 w-[1px] bg-white/15 rounded-full" />
-            <span className="flex items-center gap-1.5 text-[11.5px] font-semibold text-white/55">
-              <span className="text-sky-400">✦</span> Nationwide Delivery
-            </span>
-            <span className="h-3 w-[1px] bg-white/15 rounded-full" />
-            <span className="flex items-center gap-1.5 text-[11.5px] font-semibold text-white/55">
-              <span className="text-amber-400">✦</span> Secure Checkout
-            </span>
-            <span className="h-3 w-[1px] bg-white/15 rounded-full" />
-            <a href={settings.facebookUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-[12.5px] font-semibold text-white/70 transition hover:text-pink-300"><Facebook size={13} className="text-pink-400" />Follow us</a>
-          </div>
+          <div className="flex items-center gap-4"><a href={settings.facebookUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-[12.5px] font-semibold text-white/70 transition hover:text-pink-300"><Facebook size={13} className="text-pink-400" />Follow us</a></div>
         </div>
       </div>
 

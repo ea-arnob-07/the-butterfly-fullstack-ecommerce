@@ -21,7 +21,7 @@ export default async function AdminProductsPage() {
     [categories, itemTypes, rawProducts] = await Promise.all([
       prisma.category.findMany({ select: { id: true, name: true, segment: true, slug: true, position: true, isActive: true }, orderBy: [{ segment: 'asc' }, { position: 'asc' }, { name: 'asc' }] }),
       (prisma as any).itemType.findMany({ select: { id: true, name: true, slug: true, position: true, isActive: true }, orderBy: [{ position: 'asc' }, { name: 'asc' }] }),
-      (prisma as any).product.findMany({ include: { category: true, itemType: true, variants: true, images: { orderBy: { position: 'asc' } } }, orderBy: [{ deletedAt: 'asc' }, { createdAt: 'desc' }] }),
+      (prisma as any).product.findMany({ include: { category: true, itemType: true, variants: { orderBy: { createdAt: 'asc' } }, images: { orderBy: { position: 'asc' } } }, orderBy: [{ deletedAt: 'asc' }, { createdAt: 'desc' }] }),
     ]);
   } catch (error) {
     console.error('Admin catalog load failed:', error);

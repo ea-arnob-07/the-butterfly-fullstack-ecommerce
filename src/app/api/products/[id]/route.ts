@@ -93,22 +93,15 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   try {
     const { id } = await params;
     const url = new URL(request.url);
-    const hardDelete = url.searchParams.get('hard') === 'true';
-
-    if (hardDelete) {
-      const product = await (prisma as any).product.delete({ where: { id } });
-      refreshStore(product.slug);
+    if (url.searchParams.get('permanent') === 'true') {
+      await (prisma as any).product.delete({ where: { id } });
+      refreshStore();
       return NextResponse.json({ success: true });
-    } else {
-      const product = await (prisma as any).product.update({ where: { id }, data: { deletedAt: new Date(), isPublished: false } });
-      refreshStore(product.slug);
-      return NextResponse.json({ product });
     }
-  } catch (error: any) {
-    console.error('Delete error:', error);
-    if (error?.code === 'P2003' || (error?.message && error.message.includes('foreign key constraint'))) {
-      return NextResponse.json({ error: 'Cannot delete this product because it has been ordered by customers. Please use the Archive option instead.' }, { status: 400 });
-    }
-    return NextResponse.json({ error: 'Could not delete product.' }, { status: 500 });
+    const product = await (prisma as any).product.update({ where: { id }, data: { deletedAt: new Date(), isPublished: false } });
+    refreshStore(product.slug);
+    return NextResponse.json({ product });
+  } catch {
+    return NextResponse.json({ error: 'Could not archive or delete product.' }, { status: 500 });
   }
 }

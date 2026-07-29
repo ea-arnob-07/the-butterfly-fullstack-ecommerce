@@ -76,16 +76,11 @@ export function AdminProductList({ products: initialProducts, categories, itemTy
     if (!response.ok) setProducts(initialProducts);
   }
 
-  async function destroy(product: Product) {
-    if (!window.confirm(`PERMANENTLY delete ${product.name}? This cannot be undone.`)) return;
-    const previous = [...products];
+  async function deleteForever(product: Product) {
+    if (!window.confirm(`Permanently delete ${product.name}? This cannot be undone.`)) return;
     setProducts((old) => old.filter((item) => item.id !== product.id));
-    const response = await fetch(`/api/products/${product.id}?hard=true`, { method: 'DELETE' });
-    if (!response.ok) {
-      setProducts(previous);
-      const data = await response.json().catch(() => ({}));
-      window.alert(data.error || 'Could not permanently delete product. It might be linked to existing orders.');
-    }
+    const response = await fetch(`/api/products/${product.id}?permanent=true`, { method: 'DELETE' });
+    if (!response.ok) setProducts(initialProducts);
   }
 
   return (
@@ -102,7 +97,7 @@ export function AdminProductList({ products: initialProducts, categories, itemTy
                   <p className="mt-2 text-sm text-stone-500">SKU: {product.sku} · {product.stock} in stock · {product.images.length} image{product.images.length === 1 ? '' : 's'}</p>
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2 lg:justify-end"><span className="mr-2 font-black text-stone-900">{formatBDT(Number(product.salePrice || product.basePrice))}</span>{product.deletedAt ? <button onClick={() => restore(product)} className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-700"><ArchiveRestore size={15} /> Restore</button> : <><button onClick={() => startEdit(product)} className="inline-flex items-center gap-2 rounded-full bg-pink-50 px-4 py-2 text-sm font-bold text-butterfly-700"><Pencil size={15} /> Edit</button><button onClick={() => archive(product)} className="inline-flex items-center gap-2 rounded-full bg-stone-100 px-4 py-2 text-sm font-bold text-stone-700"><ArchiveRestore size={15} /> Archive</button></>}<button onClick={() => destroy(product)} className="inline-flex items-center gap-2 rounded-full bg-red-50 px-4 py-2 text-sm font-bold text-red-700"><Trash2 size={15} /> Delete</button></div>
+              <div className="flex flex-wrap items-center gap-2 lg:justify-end"><span className="mr-2 font-black text-stone-900">{formatBDT(Number(product.salePrice || product.basePrice))}</span>{product.deletedAt ? <><button onClick={() => restore(product)} className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-700"><ArchiveRestore size={15} /> Restore</button><button onClick={() => deleteForever(product)} className="inline-flex items-center gap-2 rounded-full bg-red-50 px-4 py-2 text-sm font-bold text-red-700"><Trash2 size={15} /> Delete</button></> : <><button onClick={() => startEdit(product)} className="inline-flex items-center gap-2 rounded-full bg-pink-50 px-4 py-2 text-sm font-bold text-butterfly-700"><Pencil size={15} /> Edit</button><button onClick={() => archive(product)} className="inline-flex items-center gap-2 rounded-full bg-red-50 px-4 py-2 text-sm font-bold text-red-700"><ArchiveRestore size={15} /> Archive</button></>}</div>
             </div>
           </div>
         ))}

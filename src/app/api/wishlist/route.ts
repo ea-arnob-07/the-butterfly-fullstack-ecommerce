@@ -8,37 +8,12 @@ const schema = z.object({ productId: z.string().min(1) });
 export async function GET(request: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ active: false, items: [] }, { status: 401 });
-
-  const url = new URL(request.url);
-  const productId = url.searchParams.get('productId');
-  const productIds = url.searchParams.get('productIds'); // batch check: comma-separated
-
-  // ── Batch check: ?productIds=id1,id2,id3 ──────────────────────────────────
-  if (productIds) {
-    const ids = productIds.split(',').filter(Boolean).slice(0, 50); // max 50 ids
-    const items = await prisma.wishlistItem.findMany({
-      where: { userId: session.userId, productId: { in: ids } },
-      select: { productId: true },
-    });
-    const activeSet = new Set(items.map((i) => i.productId));
-    const result: Record<string, boolean> = {};
-    for (const id of ids) result[id] = activeSet.has(id);
-    return NextResponse.json({ active: result });
-  }
-
-  // ── Single check: ?productId=xxx ──────────────────────────────────────────
+  const productId = new URL(request.url).searchParams.get('productId');
   if (productId) {
-    const item = await prisma.wishlistItem.findUnique({
-      where: { userId_productId: { userId: session.userId, productId } },
-    });
+    const item = await prisma.wishlistItem.findUnique({ where: { userId_productId: { userId: session.userId, productId } } });
     return NextResponse.json({ active: Boolean(item) });
   }
-
-  // ── Fetch all wishlist items ───────────────────────────────────────────────
-  const items = await prisma.wishlistItem.findMany({
-    where: { userId: session.userId },
-    orderBy: { createdAt: 'desc' },
-  });
+  const items = await prisma.wishlistItem.findMany({ where: { userId: session.userId }, orderBy: { createdAt: 'desc' } });
   return NextResponse.json({ items });
 }
 
@@ -52,7 +27,7 @@ export async function POST(request: Request) {
     const item = await prisma.wishlistItem.upsert({
       where: { userId_productId: { userId: session.userId, productId } },
       update: {},
-      create: { userId: session.userId, productId },
+      create: { userId: session.userId, productId }
     });
     return NextResponse.json({ item }, { status: 201 });
   } catch (error) {

@@ -7,8 +7,6 @@ import { getProducts } from '@/lib/products';
 import { getSiteSettings } from '@/lib/site-settings';
 import { ShieldCheck, Sparkles, Truck, RefreshCcw, ArrowRight, Star, Crown } from 'lucide-react';
 
-export const revalidate = 60;
-
 const collectionCards = [
   {
     href: '/women',
