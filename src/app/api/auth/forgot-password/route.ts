@@ -21,9 +21,13 @@ export async function POST(request: Request) {
 
     const otp = await issuePasswordResetOtp(user);
     
+    if (!otp.sent) {
+      return NextResponse.json({ error: `Please wait ${otp.retryAfter} seconds before requesting a new code.` }, { status: 429 });
+    }
+
     return NextResponse.json({
       message: 'If an account with that email exists, we have sent a password reset link.',
-      devOtp: otp.devOtp, // Only populated in development mode if Resend fails
+      devOtp: otp.devOtp,
     }, { status: 200 });
   } catch (error) {
     if (error instanceof z.ZodError) return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 });
