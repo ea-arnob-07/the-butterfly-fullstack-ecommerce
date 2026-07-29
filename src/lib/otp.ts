@@ -23,11 +23,8 @@ async function sendVerificationEmail(input: { email: string; name: string; code:
   const from = process.env.EMAIL_FROM || 'The Butterfly <onboarding@resend.dev>';
 
   if (!apiKey) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.info(`[DEV OTP] ${input.email}: ${input.code}`);
-      return { delivered: false, developmentMode: true };
-    }
-    throw new Error('Email OTP is not configured. Add RESEND_API_KEY and EMAIL_FROM.');
+    console.info(`[DEV OTP] ${input.email}: ${input.code}`);
+    return { delivered: false, developmentMode: true };
   }
 
   const response = await fetch('https://api.resend.com/emails', {
