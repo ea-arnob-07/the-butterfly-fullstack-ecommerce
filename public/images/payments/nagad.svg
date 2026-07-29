@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 96" role="img" aria-label="Nagad">
+  <rect width="240" height="96" rx="22" fill="#f25a24"/>
+  <circle cx="50" cy="48" r="25" fill="#fff" opacity=".95"/>
+  <path d="M35 51c9-20 23-22 31-8-8 18-21 22-31 8z" fill="#f25a24"/>
+  <text x="88" y="61" fill="#fff" font-family="Arial,sans-serif" font-size="34" font-weight="700">Nagad</text>
+</svg>

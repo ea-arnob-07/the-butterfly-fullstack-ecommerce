@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 96" role="img" aria-label="Rocket">
+  <rect width="240" height="96" rx="22" fill="#7a1d7e"/>
+  <circle cx="50" cy="48" r="25" fill="#fff" opacity=".95"/>
+  <path d="M42 66c4-24 13-35 27-39-2 16-9 28-27 39zm3-17l-12 10 5-16z" fill="#7a1d7e"/>
+  <text x="88" y="61" fill="#fff" font-family="Arial,sans-serif" font-size="34" font-weight="700">Rocket</text>
+</svg>
