@@ -3,49 +3,50 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { FormEvent, useState, type ReactNode } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Eye, EyeOff, Lock, Mail, LogIn } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Mail, ArrowRight } from 'lucide-react';
 
-import { Suspense } from 'react';
-
-function LoginContent() {
+export default function ForgotPasswordPage() {
   const router = useRouter();
-  const params = useSearchParams();
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showPass, setShowPass] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
     setError('');
+    setSuccess('');
+    
     const form = new FormData(event.currentTarget);
-    const response = await fetch('/api/auth/login', {
+    const email = form.get('email') as string;
+    
+    const response = await fetch('/api/auth/forgot-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: form.get('email'), password: form.get('password') }),
+      body: JSON.stringify({ email }),
     });
+    
     const data = await response.json();
     setLoading(false);
-    if (data.requiresVerification && data.email) {
-      const target = params.get('next') || '/account';
-      const query = new URLSearchParams({ email: data.email, next: target });
-      if (data.devOtp) query.set('devOtp', data.devOtp);
-      router.push(`/auth/verify?${query.toString()}`);
-      return;
+    
+    if (!response.ok) {
+      return setError(data.error || 'Something went wrong.');
     }
-    if (!response.ok) return setError(data.error || 'Login failed. Please check your credentials.');
-    router.push(params.get('next') || (data.user.role === 'CUSTOMER' ? '/account' : '/admin'));
-    router.refresh();
+    
+    // Redirect to reset password page with email
+    const query = new URLSearchParams({ email });
+    if (data.devOtp) query.set('devOtp', data.devOtp);
+    router.push(`/auth/reset-password?${query.toString()}`);
   }
 
   return (
     <AuthLayout
-      title="Welcome back"
-      subtitle="Sign in to your account to manage orders and wishlist."
-      linkText="New here?"
-      linkLabel="Create an account"
-      linkHref="/auth/register"
+      title="Reset Password"
+      subtitle="Enter your email to receive a password reset code."
+      linkText="Remembered your password?"
+      linkLabel="Sign in"
+      linkHref="/auth/login"
     >
       <form onSubmit={submit} className="space-y-4">
         {/* Email */}
@@ -60,33 +61,15 @@ function LoginContent() {
           />
         </div>
 
-        {/* Password */}
-        <div className="relative">
-          <span className="pointer-events-none absolute left-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-rose-50 text-rose-500"><Lock size={15} /></span>
-          <input
-            name="password"
-            type={showPass ? 'text' : 'password'}
-            required
-            placeholder="Password"
-            className="input-premium auth-input-both"
-          />
-          <button
-            type="button"
-            onClick={() => setShowPass(!showPass)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 transition hover:text-rose-600"
-          >
-            {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-          </button>
-        </div>
-        
-        <div className="flex justify-end">
-          <Link href="/auth/forgot-password" className="text-[13px] font-semibold text-rose-600 hover:text-rose-700 hover:underline">Forgot password?</Link>
-        </div>
-
-        {/* Error */}
+        {/* Error/Success Messages */}
         {error && (
           <div className="animate-fade-in rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             {error}
+          </div>
+        )}
+        {success && (
+          <div className="animate-fade-in rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
+            {success}
           </div>
         )}
 
@@ -98,25 +81,16 @@ function LoginContent() {
           {loading ? (
             <span className="flex items-center gap-2">
               <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-              Signing in...
+              Sending...
             </span>
           ) : (
             <span className="flex items-center gap-2">
-              <LogIn size={16} />
-              Sign In
+              Send Reset Code <ArrowRight size={16} />
             </span>
           )}
         </button>
       </form>
     </AuthLayout>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-      <LoginContent />
-    </Suspense>
   );
 }
 

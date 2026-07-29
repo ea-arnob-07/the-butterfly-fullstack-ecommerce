@@ -63,6 +63,7 @@ enum MobileBankingProvider {
 
 enum OtpPurpose {
   EMAIL_VERIFICATION
+  PASSWORD_RESET
 }
 
 model User {

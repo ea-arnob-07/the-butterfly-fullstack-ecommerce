@@ -6,8 +6,10 @@ import { getSiteSettings } from '@/lib/site-settings';
 
 export const metadata = { title: "Women's Collection" };
 
-export default async function WomenPage() {
-  const [products, categories, settings] = await Promise.all([getProducts('WOMEN'), getCategories('WOMEN'), getSiteSettings()]);
+export default async function WomenPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
+  const categorySlug = (await searchParams).category;
+  const [allProducts, categories, settings] = await Promise.all([getProducts('WOMEN'), getCategories('WOMEN'), getSiteSettings()]);
+  const products = categorySlug ? allProducts.filter((p) => p.category.slug === categorySlug) : allProducts;
   return (
     <section className="container-shell py-16">
       <div className="mb-10 rounded-[2.2rem] border border-pink-100 bg-gradient-to-r from-[#fff3f8] via-white to-[#fff8fb] p-8 shadow-soft md:p-12">

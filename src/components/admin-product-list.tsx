@@ -83,10 +83,18 @@ export function AdminProductList({ products: initialProducts, categories, itemTy
     if (!response.ok) setProducts(initialProducts);
   }
 
+  const sortedProducts = useMemo(() => {
+    return [...products].sort((a, b) => {
+      if (a.deletedAt && !b.deletedAt) return 1;
+      if (!a.deletedAt && b.deletedAt) return -1;
+      return 0;
+    });
+  }, [products]);
+
   return (
     <>
       <div className="space-y-4">
-        {products.length === 0 ? <div className="rounded-[2rem] border border-pink-100 bg-white p-8 shadow-soft text-stone-500">No products found.</div> : products.map((product) => (
+        {sortedProducts.length === 0 ? <div className="rounded-[2rem] border border-pink-100 bg-white p-8 shadow-soft text-stone-500">No products found.</div> : sortedProducts.map((product) => (
           <div key={product.id} className={`rounded-[2rem] border p-5 shadow-soft ${product.deletedAt ? 'border-stone-200 bg-stone-50 opacity-80' : 'border-pink-100 bg-white'}`}>
             <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
               <div className="flex gap-4">

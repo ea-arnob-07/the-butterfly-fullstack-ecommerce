@@ -97,3 +97,43 @@ export async function issueEmailVerificationOtp(user: { id: string; email: strin
     throw error;
   }
 }
+
+export async function issuePasswordResetOtp(user: { id: string; email: string; name: string }, options?: { ignoreRateLimit?: boolean }) {
+  const db = prisma as any;
+  const latest = await db.otpCode.findFirst({
+    where: { userId: user.id, purpose: 'PASSWORD_RESET', consumedAt: null },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  if (!options?.ignoreRateLimit && latest) {
+    const elapsed = Math.floor((Date.now() - new Date(latest.createdAt).getTime()) / 1000);
+    if (elapsed < OTP_RESEND_SECONDS) {
+      return { sent: false, retryAfter: OTP_RESEND_SECONDS - elapsed, expiresAt: latest.expiresAt as Date };
+    }
+  }
+
+  const code = String(randomInt(100000, 1000000));
+  const expiresAt = new Date(Date.now() + OTP_TTL_MINUTES * 60 * 1000);
+
+  await db.otpCode.updateMany({
+    where: { userId: user.id, purpose: 'PASSWORD_RESET', consumedAt: null },
+    data: { consumedAt: new Date() },
+  });
+  const record = await db.otpCode.create({
+    data: { userId: user.id, purpose: 'PASSWORD_RESET', codeHash: hashOtp(user.id, code), expiresAt },
+  });
+
+  try {
+    const delivery = await sendVerificationEmail({ email: user.email, name: user.name, code });
+    return {
+      sent: true,
+      retryAfter: OTP_RESEND_SECONDS,
+      expiresAt,
+      devOtp: delivery.developmentMode ? code : undefined,
+    };
+  } catch (error) {
+    await db.otpCode.delete({ where: { id: record.id } }).catch(() => undefined);
+    throw error;
+  }
+}
+

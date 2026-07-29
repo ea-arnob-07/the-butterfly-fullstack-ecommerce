@@ -94,6 +94,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     const { id } = await params;
     const url = new URL(request.url);
     if (url.searchParams.get('permanent') === 'true') {
+      await (prisma as any).orderItem.deleteMany({ where: { productId: id } });
       await (prisma as any).product.delete({ where: { id } });
       refreshStore();
       return NextResponse.json({ success: true });
@@ -101,7 +102,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     const product = await (prisma as any).product.update({ where: { id }, data: { deletedAt: new Date(), isPublished: false } });
     refreshStore(product.slug);
     return NextResponse.json({ product });
-  } catch {
+  } catch (error) {
+    console.error('DELETE ERROR:', error);
     return NextResponse.json({ error: 'Could not archive or delete product.' }, { status: 500 });
   }
 }
