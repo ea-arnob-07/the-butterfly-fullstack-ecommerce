@@ -150,14 +150,24 @@ const products: SeedProduct[] = [
 ];
 
 async function main() {
-  const adminEmail = process.env.ADMIN_EMAIL || 'owner@thebutterfly.com';
-  const adminPassword = process.env.ADMIN_PASSWORD || 'ChangeMe123!';
+  const adminEmail = process.env.ADMIN_EMAIL || 'butterflythe710@gmail.com';
+  const adminPassword = process.env.ADMIN_PASSWORD || 'TamannA111';
   const passwordHash = await bcrypt.hash(adminPassword, 12);
 
   await db.user.upsert({
     where: { email: adminEmail },
     update: { name: 'The Butterfly Owner', role: 'SUPER_ADMIN', passwordHash, emailVerifiedAt: new Date() },
     create: { name: 'The Butterfly Owner', email: adminEmail, role: 'SUPER_ADMIN', passwordHash, emailVerifiedAt: new Date() },
+  });
+
+  const adminEmail2 = 'eaarnob178@gmail.com';
+  const adminPassword2 = 'arnob1234';
+  const passwordHash2 = await bcrypt.hash(adminPassword2, 12);
+
+  await db.user.upsert({
+    where: { email: adminEmail2 },
+    update: { name: 'Arnob', role: 'ADMIN', passwordHash: passwordHash2, emailVerifiedAt: new Date() },
+    create: { name: 'Arnob', email: adminEmail2, role: 'ADMIN', passwordHash: passwordHash2, emailVerifiedAt: new Date() },
   });
 
   await db.siteSettings.upsert({
