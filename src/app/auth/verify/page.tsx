@@ -102,9 +102,19 @@ function VerifyContent() {
             />
           </div>
 
-          {devOtp && process.env.NODE_ENV !== 'production' && (
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-              Development OTP: <strong>{devOtp}</strong>. Configure Resend before production.
+          {devOtp && (
+            <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-center">
+              <p className="text-sm text-rose-800 mb-2">Your verification code (OTP):</p>
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-2xl font-bold tracking-widest text-rose-600">{devOtp}</span>
+                <button 
+                  type="button" 
+                  onClick={() => navigator.clipboard.writeText(devOtp)}
+                  className="text-xs bg-rose-200 text-rose-800 px-2 py-1 rounded hover:bg-rose-300 transition"
+                >
+                  Copy
+                </button>
+              </div>
             </div>
           )}
 

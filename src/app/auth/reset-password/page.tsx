@@ -59,6 +59,21 @@ function ResetPasswordForm() {
       linkLabel="Sign in"
       linkHref="/auth/login"
     >
+      {devOtp && (
+        <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-center">
+          <p className="text-sm text-rose-800 mb-2">Your reset code (OTP):</p>
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-2xl font-bold tracking-widest text-rose-600">{devOtp}</span>
+            <button 
+              type="button" 
+              onClick={() => navigator.clipboard.writeText(devOtp)}
+              className="text-xs bg-rose-200 text-rose-800 px-2 py-1 rounded hover:bg-rose-300 transition"
+            >
+              Copy
+            </button>
+          </div>
+        </div>
+      )}
       <form onSubmit={submit} className="space-y-4">
         {/* OTP Code */}
         <div className="relative">
