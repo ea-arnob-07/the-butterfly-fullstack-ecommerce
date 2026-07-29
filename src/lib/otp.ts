@@ -12,13 +12,14 @@ export function hashOtp(userId: string, code: string) {
   return createHash('sha256').update(`${userId}:${code}:${otpSecret()}`).digest('hex');
 }
 
-function escapeHtml(value: string) {
+function escapeHtml(value: string | null | undefined) {
+  if (!value) return '';
   return value.replace(/[&<>'"]/g, (character) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;',
   }[character] || character));
 }
 
-async function sendVerificationEmail(input: { email: string; name: string; code: string }) {
+async function sendVerificationEmail(input: { email: string; name: string | null | undefined; code: string }) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM || 'The Butterfly <onboarding@resend.dev>';
 
@@ -39,7 +40,7 @@ async function sendVerificationEmail(input: { email: string; name: string; code:
           <div style="padding:28px;border:1px solid #f8c9dc;border-radius:24px;background:#fff8fb">
             <p style="margin:0 0 12px;color:#d4075a;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase">The Butterfly · Your Dream Line</p>
             <h1 style="margin:0 0 12px;font-size:28px">Verify your email</h1>
-            <p style="line-height:1.7;color:#6d5764">Hello ${escapeHtml(input.name)}, use the verification code below to finish your signup or first login.</p>
+            <p style="line-height:1.7;color:#6d5764">Hello ${escapeHtml(input.name || 'User')}, use the verification code below to finish your signup or first login.</p>
             <div style="margin:24px 0;padding:18px;border-radius:16px;background:#ffffff;text-align:center;font-size:34px;font-weight:800;letter-spacing:10px;color:#d4075a">${input.code}</div>
             <p style="line-height:1.7;color:#6d5764">This code expires in ${OTP_TTL_MINUTES} minutes. Do not share it with anyone.</p>
           </div>
@@ -56,7 +57,7 @@ async function sendVerificationEmail(input: { email: string; name: string; code:
   return { delivered: true, developmentMode: false };
 }
 
-export async function issueEmailVerificationOtp(user: { id: string; email: string; name: string }, options?: { ignoreRateLimit?: boolean }) {
+export async function issueEmailVerificationOtp(user: { id: string; email: string; name: string | null | undefined }, options?: { ignoreRateLimit?: boolean }) {
   const db = prisma as any;
   const latest = await db.otpCode.findFirst({
     where: { userId: user.id, purpose: 'EMAIL_VERIFICATION', consumedAt: null },
@@ -95,7 +96,7 @@ export async function issueEmailVerificationOtp(user: { id: string; email: strin
   }
 }
 
-export async function issuePasswordResetOtp(user: { id: string; email: string; name: string }, options?: { ignoreRateLimit?: boolean }) {
+export async function issuePasswordResetOtp(user: { id: string; email: string; name: string | null | undefined }, options?: { ignoreRateLimit?: boolean }) {
   const db = prisma as any;
   const latest = await db.otpCode.findFirst({
     where: { userId: user.id, purpose: 'PASSWORD_RESET', consumedAt: null },
