@@ -54,24 +54,32 @@ function ResetPasswordForm() {
   return (
     <AuthLayout
       title="Set New Password"
-      subtitle={`Enter the code sent to ${email} and your new password.`}
+      subtitle={devOtp ? `Your reset code is shown below. Enter it with your new password.` : `Enter the code sent to ${email} and your new password.`}
       linkText="Remembered your password?"
       linkLabel="Sign in"
       linkHref="/auth/login"
     >
       {devOtp && (
-        <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-center">
-          <p className="text-sm text-rose-800 mb-2">Your reset code (OTP):</p>
-          <div className="flex items-center justify-center gap-2">
-            <span className="text-2xl font-bold tracking-widest text-rose-600">{devOtp}</span>
-            <button 
-              type="button" 
-              onClick={() => navigator.clipboard.writeText(devOtp)}
-              className="text-xs bg-rose-200 text-rose-800 px-2 py-1 rounded hover:bg-rose-300 transition"
-            >
-              Copy
-            </button>
+        <div className="mb-6 rounded-2xl border-2 border-rose-300 bg-gradient-to-br from-rose-50 to-pink-50 p-5 text-center shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-widest text-rose-500 mb-3">🔑 Your Password Reset Code</p>
+          <div className="flex items-center justify-center gap-2 mb-3">
+            {devOtp.split('').map((digit, i) => (
+              <span
+                key={i}
+                className="flex h-11 w-9 items-center justify-center rounded-xl border-2 border-rose-300 bg-white text-xl font-bold text-rose-700 shadow-sm"
+              >
+                {digit}
+              </span>
+            ))}
           </div>
+          <button 
+            type="button" 
+            onClick={() => navigator.clipboard.writeText(devOtp)}
+            className="text-xs bg-rose-500 text-white px-4 py-1.5 rounded-full hover:bg-rose-600 transition font-semibold"
+          >
+            Copy Code
+          </button>
+          <p className="text-xs text-rose-400 mt-2">This code expires in 10 minutes</p>
         </div>
       )}
       <form onSubmit={submit} className="space-y-4">

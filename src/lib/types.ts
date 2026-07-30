@@ -12,6 +12,7 @@ export type StoreProduct = {
   shortDescription?: string | null;
   segment: 'WOMEN' | 'MEN' | 'CHILDREN' | 'UNISEX';
   categoryName: string;
+  categorySlug?: string;
   itemTypeName?: string | null;
   basePrice: number;
   salePrice?: number | null;

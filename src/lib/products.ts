@@ -16,6 +16,7 @@ export function serializeProduct(product: any): StoreProduct {
     shortDescription: product.shortDescription,
     segment: product.segment,
     categoryName: product.category.name,
+    categorySlug: product.category.slug,
     itemTypeName: product.itemType?.name || null,
     basePrice: Number(product.basePrice),
     salePrice: product.salePrice ? Number(product.salePrice) : null,

@@ -82,18 +82,18 @@ export async function issueEmailVerificationOtp(user: { id: string; email: strin
     data: { userId: user.id, purpose: 'EMAIL_VERIFICATION', codeHash: hashOtp(user.id, code), expiresAt },
   });
 
-  try {
-    const delivery = await sendVerificationEmail({ email: user.email, name: user.name, code });
-    return {
-      sent: true,
-      retryAfter: OTP_RESEND_SECONDS,
-      expiresAt,
-      devOtp: code,
-    };
-  } catch (error) {
-    await db.otpCode.delete({ where: { id: record.id } }).catch(() => undefined);
-    throw error;
-  }
+  // Always return the code — email delivery failure should NOT block the flow.
+  // The OTP is already persisted in the DB, so the user can enter it on screen.
+  sendVerificationEmail({ email: user.email, name: user.name, code }).catch((err) => {
+    console.error('[OTP] Email delivery error (non-fatal):', err);
+  });
+
+  return {
+    sent: true,
+    retryAfter: OTP_RESEND_SECONDS,
+    expiresAt,
+    devOtp: code,
+  };
 }
 
 export async function issuePasswordResetOtp(user: { id: string; email: string; name: string | null | undefined }, options?: { ignoreRateLimit?: boolean }) {
@@ -121,17 +121,17 @@ export async function issuePasswordResetOtp(user: { id: string; email: string; n
     data: { userId: user.id, purpose: 'PASSWORD_RESET', codeHash: hashOtp(user.id, code), expiresAt },
   });
 
-  try {
-    const delivery = await sendVerificationEmail({ email: user.email, name: user.name, code });
-    return {
-      sent: true,
-      retryAfter: OTP_RESEND_SECONDS,
-      expiresAt,
-      devOtp: code,
-    };
-  } catch (error) {
-    await db.otpCode.delete({ where: { id: record.id } }).catch(() => undefined);
-    throw error;
-  }
+  // Always return the code — email delivery failure should NOT block the flow.
+  // The OTP is already persisted in the DB, so the user can enter it on screen.
+  sendVerificationEmail({ email: user.email, name: user.name, code }).catch((err) => {
+    console.error('[OTP] Password reset email delivery error (non-fatal):', err);
+  });
+
+  return {
+    sent: true,
+    retryAfter: OTP_RESEND_SECONDS,
+    expiresAt,
+    devOtp: code,
+  };
 }
 
